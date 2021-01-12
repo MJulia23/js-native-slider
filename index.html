@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Slider JS</title>
+  <link rel="stylesheet" href="libs/@fortawesome/fontawesome-free/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <div id="carousel" class="carousel">
+    
+    <div id="slides-container" class="slides">
+      <div class="slide active">Slide 1</div>
+      <div class="slide">Slide 2</div>
+      <div class="slide">Slide 3</div>
+      <div class="slide">Slide 4</div>
+      <div class="slide">Slide 5</div>
+    </div>
+
+  <ol id="indicators-container" class="indicators">
+    <li class="indicator active" data-slide-to="0"></li>
+    <li class="indicator" data-slide-to="1"></li>
+    <li class="indicator" data-slide-to="2"></li>
+    <li class="indicator" data-slide-to="3"></li>
+    <li class="indicator" data-slide-to="4"></li>
+  </ol>
+
+    <div id="controls-container" class="controls">
+      <span id="pause-btn" class="control control-pause">Pause</span><!-- не использовать button, много мороки есть фокус у него -->
+      <span id="prev-btn" class="control control-prev">Prev</span>
+      <span id="next-btn" class="control control-next">Next</span>
+    </div>
+  </div>
+  
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
