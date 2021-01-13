@@ -2,31 +2,22 @@
 function Carousel() {
   this.container = document.querySelector('#carousel')//для того чтоб работать с функцией конструктора и работать с прототипом нужен this
   this.slides = this.container.querySelectorAll('.slide');
-  this.indicatorsContainer = this.container.querySelector('#indicators-container');
-  this.indicators = this.indicatorsContainer.querySelectorAll('.indicator');
-  this.controlsContainer = this.container.querySelector('#controls-container');
-  this.pauseBtn = this.controlsContainer.querySelector('#pause-btn');
-  this.prevBtn = this.controlsContainer.querySelector('#prev-btn');
-  this.nextBtn = this.controlsContainer.querySelector('#next-btn');
+
+
   //console.log(this.container);
   //console.log(this.nextBtn);
   //console.log('constructor');
 
-  //переменные
-  this.currentSlide = 0;
-  this.timerID = null;
-  this.slidesCount = this.slides.length;
-  this.isPlaying = true;
-  this.interval = 2000;
-  this.swipeStartX = null;
-  this.swipeEndX = null;
 
-  this.CLASS_TRIGGER = 'active';
-  this.FA_PAUSE = '<i class="far fa-pause-circle"></i>';
-  this.FA_PLAY = '<i class="far fa-play-circle"></i>';
-  this.SPACE = ' ';
-  this.LEFT_ARROW = 'ArrowLeft';
-  this.RIGHT_ARROW = 'ArrowRight';
+
+  this.interval = 2000;
+
+
+  this._initProps();
+  this._initIndicators();
+  this._initControls();
+
+  this._initListeners();
   /*
     //метод который будет пренадлежать экземпляру, разница в оптимизации - будет множество
     */
@@ -37,103 +28,166 @@ function Carousel() {
 Carousel.prototype = {
   //присвоить объект и работать с ним
 
-  goToNth(n) {
-  this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);//добавляем this чтобы видеть соответствющие элементы
-  this.indicators[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
-  this.currentSlide = (n + this.slidesCount) % this.slidesCount;
-  this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
-  this.indicators[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
-},
+  _initProps() {//свойство будет инициализировать какие-то 
+    //переменные
+    this.slidesCount = this.slides.length;
+    this.swipeStartX = null;
+    this.swipeEndX = null;
+    this.currentSlide = 0;
+    this.timerID = null;
+    this.isPlaying = true;
 
-goToNext(){
-   this.goToNth(this.currentSlide + 1);
+    //константы
+    this.CLASS_TRIGGER = 'active';
+    this.FA_PAUSE = '<i class="far fa-pause-circle"></i>';
+    this.FA_PLAY = '<i class="far fa-play-circle"></i>';
+    this.FA_PREV = '<i class="fas fa-angle-left"></i>';
+    this.FA_NEXT = '<i class="fas fa-angle-right"></i>';
+    this.SPACE = ' ';
+    this.LEFT_ARROW = 'ArrowLeft';
+    this.RIGHT_ARROW = 'ArrowRight';
   },
-goToPrev(){
-  this.goToNth(this.currentSlide - 1);
-},
-//в консоли ввести -> carousel.goToNext() и проверить что метод работает
 
- pause() {
-  this.pauseBtn.innerHTML = this.FA_PLAY;
-  this.isPlaying = false;
-  clearInterval(this.timerID);
+  _initControls() {
+    const controls = document.createElement('div');//div добавился
+    const PAUSE = `<span id="pause-btn" class="control control-pause">${this.FA_PAUSE}</span>`;
+    const PREV = `<span id="prev-btn" class="control control-prev">${this.FA_PREV}</span>`;
+    const NEXT = `<span id="next-btn" class="control control-next">${this.FA_NEXT}</span>`;
 
-},
-play() {
-  this.pauseBtn.innerHTML = this.FA_PAUSE;
-    this.timerID = setInterval( () => {
+    controls.setAttribute('class', 'controls');//класс +
+    controls.setAttribute('id', 'controls-container');//id +
+
+    //добавить кнопки
+    controls.innerHTML = PAUSE + PREV + NEXT;
+    this.container.appendChild(controls);
+
+    this.pauseBtn = this.container.querySelector('#pause-btn');
+    this.prevBtn = this.container.querySelector('#prev-btn');
+    this.nextBtn = this.container.querySelector('#next-btn');
+
+  },
+  //индикаторы, создаем динамически
+  _initIndicators() {
+    const indicators = document.createElement('ol');
+
+    indicators.setAttribute('class', 'indicators');
+    indicators.setAttribute('id', 'indicators-container');
+
+    for (let i = 0; i < this.slidesCount; i++) { 
+      const indicator  = document.createElement('li');
+
+      indicator.setAttribute('class', 'indicator');
+      if(i===0) indicator.classList.add('active');
+      indicators.dataset.slideTo = `${i}`;
+
+      indicators.appendChild(indicator);
+    }
+
+    this.container.appendChild(indicators);
+    this.indicatorsContainer = this.container.querySelector('#indicators-container');
+    this.indicators = this.indicatorsContainer.querySelectorAll('.indicator');
+
+  },
+  
+
+  //создаём метод, обработчики
+  _initListeners() {
+
+    this.pauseBtn.addEventListener('click', this.pausePlay.bind(this));
+    this.nextBtn.addEventListener('click', this.next.bind(this));//потеряли контекст ->bind(this)
+    this.prevBtn.addEventListener('click', this.prev.bind(this));
+    this.indicatorsContainer.addEventListener('click', this._indicate.bind(this));
+    this.container.addEventListener('touchstart', this._swipeStart.bind(this));
+    this.container.addEventListener('touchend', this._swipeEnd.bind(this));
+    document.addEventListener('keydown', this._pressKey.bind(this));
+
+  },
+  _indicate(e) {
+    let target = e.target;
+    if (target.classList.contains('indicator')) {
+      this.pause();
+      this.goToNth(+target.dataset.slideTo);
+    }
+
+  },
+
+    //работа с клавиатуры
+    _pressKey(e) {
+      if (e.key === this.LEFT_ARROW) this.prev();
+      if (e.key === this.RIGHT_ARROW) this.next();
+      if (e.key === this.SPACE) this.pausePlay();
+    },
+
+        //обработчик свайпа
+
+  _swipeStart(e) {
+
+    if (e.changedTouches.length === 1) this.swipeStartX = e.changedTouches[0].pageX;
+
+  },
+  _swipeEnd(e) {
+    if (e.changedTouches.length === 1) {
+      this.swipeEndX = e.changedTouches[0].pageX;
+      if (this.swipeStartX - this.swipeEndX < 0) this.prev();
+      if (this.swipeStartX - this.swipeEndX > 0) this.next();
+    }
+  },
+  goToNth(n) {
+    this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);//добавляем this чтобы видеть соответствющие элементы
+    this.indicators[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
+    this.currentSlide = (n + this.slidesCount) % this.slidesCount;
+    this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
+    this.indicators[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
+  },
+
+  goToNext() {
+    this.goToNth(this.currentSlide + 1);
+  },
+  goToPrev() {
+    this.goToNth(this.currentSlide - 1);
+  },
+  //в консоли ввести -> carousel.goToNext() и проверить что метод работает
+
+  pause() {
+    this.pauseBtn.innerHTML = this.FA_PLAY;
+    this.isPlaying = false;
+    clearInterval(this.timerID);
+
+  },
+  play() {
+    this.pauseBtn.innerHTML = this.FA_PAUSE;
+    this.timerID = setInterval(() => {
       this.goToNext();
-     }, this.interval);//setTimeout and setInterval ведут к потере контекста... стрелочной функцией решим
-     //
-     //или
-     //let that = this;
-     //this.timeID = setInterval( function(){
-       //that.goToNext();
-       //}, this.interval);
-  this.isPlaying = true;
-},
-pausePlay(){
-  this.isPlaying ? this.pause() : this.play();
-},
+    }, this.interval);//setTimeout and setInterval ведут к потере контекста... стрелочной функцией решим
+    //
+    //или
+    //let that = this;
+    //this.timeID = setInterval( function(){
+    //that.goToNext();
+    //}, this.interval);
+    this.isPlaying = true;
+  },
+  pausePlay() {
+    this.isPlaying ? this.pause() : this.play();
+  },
 
-next() {
-  this.pause();
-  this.goToNext();
-},
-
-prev() {
-  this.pause();
-  this.goToPrev();
-},
-
-indicate(e) {
-  let target = e.target;
-  if (target.classList.contains('indicator')) {
+  next() {
     this.pause();
-    this.goToNth(+target.dataset.slideTo);
-  }
-
-},
-//работа с клавиатуры
-pressKey(e) { 
-  if (e.key === this.LEFT_ARROW) this.prev();
-  if (e.key === this.RIGHT_ARROW) this.next();
-  if (e.key === this.SPACE) this.pausePlay();
-},
-
-
-//обработчик свайпа
-
-swipeStart(e) {
-  
-  if (e.changedTouches.length === 1)
-  this.swipeStartX = e.changedTouches[0].pageX;
-  
-},
-swipeEnd(e) {
-  if (e.changedTouches.length === 1) {
-    this.swipeEndX = e.changedTouches[0].pageX;
-    if (this.swipeStartX - this.swipeEndX < 0) this.prev();
-    if (this.swipeEndX - this.swipeStartX > 0) this.next();
-  }
-},
-//создаём метод
-initListeners(){
-  
-  this.pauseBtn.addEventListener('click', this.pausePlay);
-  this.nextBtn.addEventListener('click', this.next);
-  this.prevBtn.addEventListener('click', this.prev);
-  this.indicatorsContainer.addEventListener('click', this.indicate);
-  this.container.addEventListener('touchstart', this.swipeStart);
-  this.container.addEventListener('touchend', this.swipeEnd);
-  document.addEventListener('keydown', this.pressKey);
-  
-},
-//запустить таймер
-init(){
-  this.timerID = setInterval( () => {
     this.goToNext();
-   }, this.interval);//время переключения
+  },
 
-}
+  prev() {
+    this.pause();
+    this.goToPrev();
+  },
+
+
+
+  //запустить таймер
+  init() {
+    this.timerID = setInterval(() => {
+      this.goToNext();
+    }, this.interval);//время переключения
+
+  }
 };

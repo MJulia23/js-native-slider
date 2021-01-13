@@ -129,7 +129,7 @@
       if (e.changedTouches.length === 1) {
         swipeEndX = e.changedTouches[0].pageX;
         if (swipeStartX - swipeEndX < 0) prev();
-        if (swipeEndX - swipeStartX > 0) next();
+        if (swipeStartX - swipeEndXX > 0) next();
       }
     }
     /*
