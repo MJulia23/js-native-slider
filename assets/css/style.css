@@ -16,13 +16,13 @@ body {
 .fa-angle-left,
 .fa-angle-right {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 40px;
+  /* font-size: 40px; */
 }
 
 .fa-play-circle,
 .fa-pause-circle {
   color: rgba(255, 255, 255, 0.4);
-  font-size: 40vh;
+  /* font-size: 40vh; */
 }
 
 /*
