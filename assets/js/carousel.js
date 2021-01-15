@@ -1,7 +1,8 @@
 //конструктор на прототипах
-function Carousel() {
-  this.container = document.querySelector('#carousel')//для того чтоб работать с функцией конструктора и работать с прототипом нужен this
-  this.slides = this.container.querySelectorAll('.slide');
+function Carousel(containerID = '#carousel', slideID = '.slide') {
+
+  this.container = document.querySelector(containerID);//для того чтоб работать с функцией конструктора и работать с прототипом нужен this
+  this.slides = this.container.querySelectorAll(slideID);
 
 
   //console.log(this.container);
@@ -16,7 +17,6 @@ function Carousel() {
   this._initProps();
   this._initIndicators();
   this._initControls();
-
   this._initListeners();
   /*
     //метод который будет пренадлежать экземпляру, разница в оптимизации - будет множество
@@ -31,8 +31,6 @@ Carousel.prototype = {
   _initProps() {//свойство будет инициализировать какие-то 
     //переменные
     this.slidesCount = this.slides.length;
-    this.swipeStartX = null;
-    this.swipeEndX = null;
     this.currentSlide = 0;
     this.timerID = null;
     this.isPlaying = true;
@@ -73,11 +71,11 @@ Carousel.prototype = {
     indicators.setAttribute('class', 'indicators');
     indicators.setAttribute('id', 'indicators-container');
 
-    for (let i = 0; i < this.slidesCount; i++) { 
-      const indicator  = document.createElement('li');
+    for (let i = 0; i < this.slidesCount; i++) {
+      const indicator = document.createElement('li');
 
       indicator.setAttribute('class', 'indicator');
-      if(i===0) indicator.classList.add('active');
+      if (i === 0) indicator.classList.add('active');
       indicators.dataset.slideTo = `${i}`;
 
       indicators.appendChild(indicator);
@@ -88,7 +86,7 @@ Carousel.prototype = {
     this.indicators = this.indicatorsContainer.querySelectorAll('.indicator');
 
   },
-  
+
 
   //создаём метод, обработчики
   _initListeners() {
@@ -97,41 +95,25 @@ Carousel.prototype = {
     this.nextBtn.addEventListener('click', this.next.bind(this));//потеряли контекст ->bind(this)
     this.prevBtn.addEventListener('click', this.prev.bind(this));
     this.indicatorsContainer.addEventListener('click', this._indicate.bind(this));
-    this.container.addEventListener('touchstart', this._swipeStart.bind(this));
-    this.container.addEventListener('touchend', this._swipeEnd.bind(this));
     document.addEventListener('keydown', this._pressKey.bind(this));
 
   },
-  _indicate(e) {
+  _indicate(e) {//перенеcла к приватным
     let target = e.target;
     if (target.classList.contains('indicator')) {
       this.pause();
       this.goToNth(+target.dataset.slideTo);
     }
-
   },
 
-    //работа с клавиатуры
-    _pressKey(e) {
-      if (e.key === this.LEFT_ARROW) this.prev();
-      if (e.key === this.RIGHT_ARROW) this.next();
-      if (e.key === this.SPACE) this.pausePlay();
-    },
-
-        //обработчик свайпа
-
-  _swipeStart(e) {
-
-    if (e.changedTouches.length === 1) this.swipeStartX = e.changedTouches[0].pageX;
-
+  //работа с клавиатуры
+  _pressKey(e) {
+    if (e.key === this.LEFT_ARROW) this.prev();
+    if (e.key === this.RIGHT_ARROW) this.next();
+    if (e.key === this.SPACE) this.pausePlay();
   },
-  _swipeEnd(e) {
-    if (e.changedTouches.length === 1) {
-      this.swipeEndX = e.changedTouches[0].pageX;
-      if (this.swipeStartX - this.swipeEndX < 0) this.prev();
-      if (this.swipeStartX - this.swipeEndX > 0) this.next();
-    }
-  },
+
+
   goToNth(n) {
     this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);//добавляем this чтобы видеть соответствющие элементы
     this.indicators[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
@@ -191,3 +173,35 @@ Carousel.prototype = {
 
   }
 };
+
+//возможность создание наследования прототипов
+
+function SwipeCarousel() {
+  Carousel.apply(this, arguments);//наследование
+}
+//реализация корректного наследования
+SwipeCarousel.prototype = Object.create(Carousel.prototype);//присвоение прототип объекта карусель
+SwipeCarousel.prototype.constructor = SwipeCarousel;//обращение к свайп, к свойству прототайп и фиксим конструктор -> конструктором будет карусель-> а нужно чтоб свайп карусель
+
+SwipeCarousel.prototype._initListeners = function () {
+  Carousel.prototype._initListeners.apply(this);//перед тем как добавить новые свойства элементу, обращаемся к родителю
+  this.container.addEventListener('touchstart', this._swipeStart.bind(this));
+  this.container.addEventListener('touchend', this._swipeEnd.bind(this));
+};
+
+SwipeCarousel.prototype._swipeStart = function (e) {//методу присваиваем func
+  if (e.changedTouches.length === 1) this.swipeStartX = e.changedTouches[0].pageX;
+};
+
+SwipeCarousel.prototype._swipeEnd = function (e) {//создается свойство на прямую
+  if (e.changedTouches.length === 1) {
+    this.swipeEndX = e.changedTouches[0].pageX;
+    if (this.swipeStartX - this.swipeEndX < 0) this.prev();
+    if (this.swipeStartX - this.swipeEndX > 0) this.next();
+  }
+};
+
+
+
+
+

@@ -1,6 +1,6 @@
 // переписываем на прототипы
 
-let carousel = new Carousel();
+let carousel = new Carousel('#slider', '.item');
 
 
 /*

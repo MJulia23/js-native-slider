@@ -3,3 +3,6 @@ yarn.lock
 
 # IntellijIdea files
 .idea/
+.log/
+debug.log
+libs/debug.log
