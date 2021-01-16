@@ -1,6 +1,7 @@
 // переписываем на прототипы
+let carousel = new SwipeCarousel({interval: 2000});
 
-let carousel = new Carousel('#slider', '.item');
+//let carousel = new SwipeCarousel('#slider', '.item');
 
 
 /*

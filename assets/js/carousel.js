@@ -1,35 +1,32 @@
-//конструктор на прототипах
-function Carousel(containerID = '#carousel', slideID = '.slide') {
+class Carousel {
+  //containerID = '', slideID = '.slide', interval = 2000
+  constructor(sett) {
+    let settings = this._initConfig(sett)
 
-  this.container = document.querySelector(containerID);//для того чтоб работать с функцией конструктора и работать с прототипом нужен this
-  this.slides = this.container.querySelectorAll(slideID);
+    this.container = document.querySelector(settings.containerID);
+    this.slides = this.container.querySelectorAll(settings.slideID);
+    this.interval = settings.interval;
 
-
-  //console.log(this.container);
-  //console.log(this.nextBtn);
-  //console.log('constructor');
-
-
-
-  this.interval = 2000;
-
-
-  this._initProps();
-  this._initIndicators();
-  this._initControls();
-  this._initListeners();
-  /*
-    //метод который будет пренадлежать экземпляру, разница в оптимизации - будет множество
+  }
+  _initConfig(obj) {
+    /*
+    //традиционный
     */
-}
-/*
-//метод пренадлежит прототипу, разница в оптимизации - в прототипе будет одно свойство
-*/
-Carousel.prototype = {
-  //присвоить объект и работать с ним
+    // let settings = {//дефолтное состояние, если ниже undefined
+    //   containerID: '#carousel',
+    //   interval: 5000,
+    //   slideID: '.slide'
 
-  _initProps() {//свойство будет инициализировать какие-то 
-    //переменные
+    // };
+    // if (obj !== undefined) {// если undefined -> дальше не пойдем
+    //   settings.containerID = obj.containerID || '#carousel';
+    //   settings.interval = obj.interval || 5000;
+    //   settings.slideID = obj.slideID || '.slide';
+    // }
+    return {...{ containerID: '#carousel', interval: 5000, slideID: '.slide' }, ...obj};
+  }
+  //методы
+  _initProps() {
     this.slidesCount = this.slides.length;
     this.currentSlide = 0;
     this.timerID = null;
@@ -44,18 +41,16 @@ Carousel.prototype = {
     this.SPACE = ' ';
     this.LEFT_ARROW = 'ArrowLeft';
     this.RIGHT_ARROW = 'ArrowRight';
-  },
-
+  }
   _initControls() {
     const controls = document.createElement('div');//div добавился
     const PAUSE = `<span id="pause-btn" class="control control-pause">${this.FA_PAUSE}</span>`;
     const PREV = `<span id="prev-btn" class="control control-prev">${this.FA_PREV}</span>`;
     const NEXT = `<span id="next-btn" class="control control-next">${this.FA_NEXT}</span>`;
 
-    controls.setAttribute('class', 'controls');//класс +
-    controls.setAttribute('id', 'controls-container');//id +
+    controls.setAttribute('class', 'controls');
+    controls.setAttribute('id', 'controls-container');
 
-    //добавить кнопки
     controls.innerHTML = PAUSE + PREV + NEXT;
     this.container.appendChild(controls);
 
@@ -63,8 +58,7 @@ Carousel.prototype = {
     this.prevBtn = this.container.querySelector('#prev-btn');
     this.nextBtn = this.container.querySelector('#next-btn');
 
-  },
-  //индикаторы, создаем динамически
+  }
   _initIndicators() {
     const indicators = document.createElement('ol');
 
@@ -76,7 +70,7 @@ Carousel.prototype = {
 
       indicator.setAttribute('class', 'indicator');
       if (i === 0) indicator.classList.add('active');
-      indicators.dataset.slideTo = `${i}`;
+      indicator.dataset.slideTo = `${i}`;
 
       indicators.appendChild(indicator);
     }
@@ -85,34 +79,30 @@ Carousel.prototype = {
     this.indicatorsContainer = this.container.querySelector('#indicators-container');
     this.indicators = this.indicatorsContainer.querySelectorAll('.indicator');
 
-  },
+  }
 
-
-  //создаём метод, обработчики
   _initListeners() {
 
     this.pauseBtn.addEventListener('click', this.pausePlay.bind(this));
-    this.nextBtn.addEventListener('click', this.next.bind(this));//потеряли контекст ->bind(this)
+    this.nextBtn.addEventListener('click', this.next.bind(this));
     this.prevBtn.addEventListener('click', this.prev.bind(this));
     this.indicatorsContainer.addEventListener('click', this._indicate.bind(this));
     document.addEventListener('keydown', this._pressKey.bind(this));
 
-  },
-  _indicate(e) {//перенеcла к приватным
+  }
+  _indicate(e) {
     let target = e.target;
     if (target.classList.contains('indicator')) {
       this.pause();
       this.goToNth(+target.dataset.slideTo);
     }
-  },
+  }
 
-  //работа с клавиатуры
   _pressKey(e) {
     if (e.key === this.LEFT_ARROW) this.prev();
     if (e.key === this.RIGHT_ARROW) this.next();
     if (e.key === this.SPACE) this.pausePlay();
-  },
-
+  }
 
   goToNth(n) {
     this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);//добавляем this чтобы видеть соответствющие элементы
@@ -120,88 +110,65 @@ Carousel.prototype = {
     this.currentSlide = (n + this.slidesCount) % this.slidesCount;
     this.slides[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
     this.indicators[this.currentSlide].classList.toggle(this.CLASS_TRIGGER);
-  },
+  }
 
   goToNext() {
     this.goToNth(this.currentSlide + 1);
-  },
+  }
   goToPrev() {
     this.goToNth(this.currentSlide - 1);
-  },
-  //в консоли ввести -> carousel.goToNext() и проверить что метод работает
-
+  }
   pause() {
     this.pauseBtn.innerHTML = this.FA_PLAY;
     this.isPlaying = false;
     clearInterval(this.timerID);
-
-  },
+  }
   play() {
     this.pauseBtn.innerHTML = this.FA_PAUSE;
     this.timerID = setInterval(() => {
       this.goToNext();
-    }, this.interval);//setTimeout and setInterval ведут к потере контекста... стрелочной функцией решим
-    //
-    //или
-    //let that = this;
-    //this.timeID = setInterval( function(){
-    //that.goToNext();
-    //}, this.interval);
+    }, this.interval);
     this.isPlaying = true;
-  },
+  }
   pausePlay() {
     this.isPlaying ? this.pause() : this.play();
-  },
-
+  }
   next() {
     this.pause();
     this.goToNext();
-  },
-
+  }
   prev() {
     this.pause();
     this.goToPrev();
-  },
-
-
-
-  //запустить таймер
+  }
   init() {
-    this.timerID = setInterval(() => {
-      this.goToNext();
-    }, this.interval);//время переключения
+    this._initProps();
+    this._initIndicators();
+    this._initControls();
+    this._initListeners();
+    this.timerID = setInterval(() => this.goToNext(), this.interval);
 
   }
-};
 
-//возможность создание наследования прототипов
-
-function SwipeCarousel() {
-  Carousel.apply(this, arguments);//наследование
 }
-//реализация корректного наследования
-SwipeCarousel.prototype = Object.create(Carousel.prototype);//присвоение прототип объекта карусель
-SwipeCarousel.prototype.constructor = SwipeCarousel;//обращение к свайп, к свойству прототайп и фиксим конструктор -> конструктором будет карусель-> а нужно чтоб свайп карусель
+class SwipeCarousel extends Carousel {
+  _initListeners() {
 
-SwipeCarousel.prototype._initListeners = function () {
-  Carousel.prototype._initListeners.apply(this);//перед тем как добавить новые свойства элементу, обращаемся к родителю
-  this.container.addEventListener('touchstart', this._swipeStart.bind(this));
-  this.container.addEventListener('touchend', this._swipeEnd.bind(this));
-};
-
-SwipeCarousel.prototype._swipeStart = function (e) {//методу присваиваем func
-  if (e.changedTouches.length === 1) this.swipeStartX = e.changedTouches[0].pageX;
-};
-
-SwipeCarousel.prototype._swipeEnd = function (e) {//создается свойство на прямую
-  if (e.changedTouches.length === 1) {
-    this.swipeEndX = e.changedTouches[0].pageX;
-    if (this.swipeStartX - this.swipeEndX < 0) this.prev();
-    if (this.swipeStartX - this.swipeEndX > 0) this.next();
+    super._initListeners();
+    this.container.addEventListener('touchstart', this._swipeStart.bind(this));
+    this.container.addEventListener('touchend', this._swipeEnd.bind(this));
   }
-};
+  _swipeStart(e) {
+    if (e.changedTouches.length === 1) this.swipeStartX = e.changedTouches[0].pageX;
+  }
 
+  _swipeEnd(e) {
+    if (e.changedTouches.length === 1) {
+      this.swipeEndX = e.changedTouches[0].pageX;
+      if (this.swipeStartX - this.swipeEndX < 0) this.prev();
+      if (this.swipeStartX - this.swipeEndX > 0) this.next();
+    }
+  }
 
-
-
+}
 
