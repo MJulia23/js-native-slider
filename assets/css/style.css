@@ -16,13 +16,13 @@ body {
 .fa-angle-left,
 .fa-angle-right {
   color: rgba(255, 255, 255, 0.4);
-  /* font-size: 40px; */
+  font-size: 40px;
 }
 
 .fa-play-circle,
 .fa-pause-circle {
   color: rgba(255, 255, 255, 0.4);
-  /* font-size: 40vh; */
+  font-size: 40vh;
 }
 
 /*
@@ -31,7 +31,8 @@ these make the slideshow work
 */
 .slides {
   position: relative;
-  height: 150px;
+  width: auto;
+  height: 100vh;
   margin-bottom: 20px;
 }
 
@@ -41,6 +42,10 @@ these make the slideshow work
   top: 0;
   width: 100%;
   height: 100%;
+  padding: 20px;
+  background-size: cover;
+  background-position: 50% 50%;
+  font-size: 35px;
   opacity: 0;
   -webkit-transition: opacity 0.5s;
   -o-transition: opacity 0.5s;
@@ -55,79 +60,123 @@ these make the slideshow work
   /* выдвигаем */
 }
 
-/*
-  non-essential styles:
-  just for appearance; change whatever you want
-  */
-.slide {
-  font-size: 40px;
-  padding: 40px;
-  -webkit-box-sizing: border-box;
-          box-sizing: border-box;
-  background: #333;
-  color: #fff;
-}
-
-.slide:nth-of-type(1) {
-  background: red;
-}
-
-.slide:nth-of-type(2) {
-  background: orange;
-}
-
-.slide:nth-of-type(3) {
-  background: green;
-}
-
-.slide:nth-of-type(4) {
-  background: blue;
-}
-
-.slide:nth-of-type(5) {
-  background: purple;
-}
-
 .controls {
+  position: absolute;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
+  top: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.control-pause, .control-prev, .control-next {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  bottom: 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+}
+
+.control-pause {
+  top: calc(50% - 20vh);
+  left: calc(50% - 20vh);
+  height: 40vh;
+  padding: 0;
+  -webkit-transition: opacity 0.25s ease-out;
+  -o-transition: opacity 0.25s ease-out;
+  transition: opacity 0.25s ease-out;
+  opacity: 0;
+}
+
+.control-pause:hover, .control-pause:focus {
+  -webkit-transition: opacity 1s ease-in 0.5s;
+  -o-transition: opacity 1s ease-in 0.5s;
+  transition: opacity 1s ease-in 0.5s;
+  opacity: 1;
+  text-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.control-prev {
+  left: 0;
+  width: 10%;
+}
+
+.control-prev:hover, .control-prev:focus {
+  color: #ffffff;
+  background: -webkit-gradient(linear, left top, right top, from(rgba(66, 66, 66, 0.8)), to(rgba(66, 66, 66, 0)));
+  background: -o-linear-gradient(left, rgba(66, 66, 66, 0.8), rgba(66, 66, 66, 0));
+  background: linear-gradient(to right, rgba(66, 66, 66, 0.8), rgba(66, 66, 66, 0));
+  text-shadow: 0 0 10px #ffffff;
+}
+
+.control-next {
+  right: 0;
+  width: 10%;
+}
+
+.control-next:hover, .control-next:focus {
+  color: #ffffff;
+  background: -webkit-gradient(linear, right top, left top, from(rgba(66, 66, 66, 0.8)), to(rgba(66, 66, 66, 0)));
+  background: -o-linear-gradient(right, rgba(66, 66, 66, 0.8), rgba(66, 66, 66, 0));
+  background: linear-gradient(to left, rgba(66, 66, 66, 0.8), rgba(66, 66, 66, 0));
+  text-shadow: 0 0 10px #ffffff;
 }
 
 .indicators {
+  position: absolute;
+  z-index: 1;
+  bottom: 0;
   display: -webkit-box;
   display: -ms-flexbox;
   display: flex;
+  width: 100%;
+  height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  list-style: none;
-  padding: 0;
-  margin: 0 0 15px 0;
 }
 
-.indicators > li {
-  margin-right: 5px;
+.indicator {
+  width: 20px;
+  height: 20px;
+  margin: -40px 7.5px 0;
+  border: 3px solid rgba(66, 66, 66, 0.4);
+  border-radius: 50%;
+  outline: none;
+  background: none;
+  background-clip: padding-box;
 }
 
-.indicators .active {
-  background-color: tomato;
-}
-
-.indicator,
-.control {
-  height: 40px;
-  min-width: 40px;
-  display: inline-block;
-  padding: 10px 20px;
-  margin-right: 15px;
-  background-color: #cccccc;
+.indicator:hover {
   cursor: pointer;
-  -webkit-user-select: none;
-     -moz-user-select: none;
-      -ms-user-select: none;
-          user-select: none;
+}
+
+.indicator.active {
+  border-color: #ffffff;
+  -webkit-box-shadow: 0 0 10px #424242;
+          box-shadow: 0 0 10px #424242;
+}
+
+@media (min-width: 992px) {
+  .control-pause, .control-prev, .control-next {
+    cursor: pointer;
+  }
+  .indicator {
+    cursor: pointer;
+  }
 }

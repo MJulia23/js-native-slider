@@ -1,0 +1,34 @@
+/*
+essential styles:
+these make the slideshow work
+*/
+
+.slides {
+    //контейнер
+    position: relative;
+    width: auto;
+    height: 100vh;
+    //temp
+    margin-bottom: 20px;
+}
+
+.slide {
+    //вписали слайды в контейнер
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    padding: 20px;
+    background-size: cover;
+    background-position: 50% 50%;
+    font-size: 35px;
+    opacity: 0;
+    transition: opacity 0.5s; /* анимация */
+}
+
+.active {
+    opacity: 1; /* становится 1 */
+    z-index: 1; /* выдвигаем */
+}
+
